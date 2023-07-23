@@ -7,20 +7,6 @@ import Message from "./Message";
 const Messages = () => {
   const [messages, setMessages] = useState([]);
   const { data } = useContext(ChatContext);
-  // if (data.chatId==="ajay"){
-  //   //don't request until this
-  // }else{
-  //   useEffect(() => {
-  //     const unSub = onSnapshot(doc(db, "chats", data.chatId), (doc) => {
-  //       doc.exists() && setMessages(doc.data().messages);
-  //     });
-  
-  //     return () => {
-  //       unSub();
-  //     };
-  //   }, [data.chatId]);
-  //   console.log(messages)
-  // }
   useEffect(() => {
     // Check the condition here
     if (data.chatId === "ajay") {
@@ -49,7 +35,7 @@ const Messages = () => {
           Select someone to start a conversation
         </div>
       ) : (
-        messages.map((m) => <Message message={m} key={m.id} />)
+        messages.map((m) => <Message message={m} messages={messages} key={m.id} />)
       )}
     </div>
   );

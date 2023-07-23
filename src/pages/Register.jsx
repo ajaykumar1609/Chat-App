@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import add_image from "../img/add-image.png"
+// import add_image from "../img/add-image.png"
 // import dp from "../img/defaultpic.webp"
 import {ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 // import { DriveFolderUploadOutlined } from "@mui/icons-material";
@@ -8,34 +8,45 @@ import {auth,db,storage} from "../firebase"
 import { doc, setDoc } from "firebase/firestore";
 import { useNavigate, Link } from "react-router-dom";
 // import {DriveFolderUploadOutlined} from '@mui/icons-material';
-import { generateKeyPair, encryptMessage } from '../rsa-utils';
+import JSEncrypt from 'jsencrypt';
 const Register = () => {
   const [err, setErr] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [t_file, setFile] = useState(null);
+  // const [t_file, setFile] = useState(null);
   const [img, setImg] = useState(null);
   const navigate = useNavigate();
-  const { publicKey, privateKey } = generateKeyPair();
+
+  // Generate a new RSA key pair (public and private keys)
+  const encryptor = new JSEncrypt();
+  encryptor.getKey();
+
+  // Get the public key to share with others (e.g., for encryption)
+  const publicKey = encryptor.getPublicKey();
+
+  // Get the private key to keep securely (e.g., for decryption)
+  const privateKey = encryptor.getPrivateKey();
+
+
   // const defaultAvatar = {dp};
   // const handleClick = ()=>{
   //   setLoading(true);
   // };
   // const selectedFile = null;
-  const handleFileChange = (e) => {
-    const selectedFile = e.target.files[0];
-    setFile(selectedFile);
-  };
-  const fileInputRef = useRef(null); // Create a ref for the file input
+  // const handleFileChange = (e) => {
+  //   const selectedFile = e.target.files[0];
+  //   setFile(selectedFile);
+  // };
+  // const fileInputRef = useRef(null); // Create a ref for the file input
   // const handleRemove = () => {
   //   setFile(null); // Reset the file state to null to remove the selected image
   // };
-  const handleRemove = () => {
-    setFile(null); // Reset the file state to null to remove the selected image
-    // Clear the file input value to allow selecting the same file again
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
+  // const handleRemove = () => {
+  //   setFile(null); // Reset the file state to null to remove the selected image
+  //   // Clear the file input value to allow selecting the same file again
+  //   if (fileInputRef.current) {
+  //     fileInputRef.current.value = "";
+  //   }
+  // };
   const handleSubmit = async (e) =>{
     e.preventDefault()
     // console.log(e)
