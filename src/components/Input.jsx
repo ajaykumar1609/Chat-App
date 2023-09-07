@@ -1,45 +1,77 @@
 import React, { useContext, useState } from "react";
+import CameraAltIcon from '@mui/icons-material/CameraAlt';
+import SendIcon from '@mui/icons-material/Send';
+import { red } from '@mui/material/colors';
 import Img from "../img/cam.png";
 import Attach from "../img/attach.png";
 import { AuthContext } from "../context/AuthContext";
 import { ChatContext } from "../context/ChatContext";
 import CryptoJS from 'crypto-js';
-// import JSEncrypt from 'jsencrypt';
-// import { encryptMessage } from "../encryptionUtils";
 import {
   arrayUnion,
   doc,
   serverTimestamp,
   Timestamp,
   updateDoc,
+  getDoc,setDoc
 } from "firebase/firestore";
 import { db, storage } from "../firebase";
 import { v4 as uuid } from "uuid";
 import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
-// import { generateKeyPair, encryptMessage, decryptMessage } from '../rsa-utils';
 
 const Input = () => {
-
-  // const encryptor = new JSEncrypt();
-
   const [text, setText] = useState("");
   const [img, setImg] = useState(null);
-  // var t = "";
-  const handleText = (e)=>{
-    // console.log(data.user);
-    // encryptor.setPublicKey(data.user.puk);
-    // t = encryptor.encrypt(e.target.value);
-    setText(e.target.value);
-  }
+  const { currentUser } = useContext(AuthContext);
+  const { data } = useContext(ChatContext);
+  const [imgPreview, setImgPreview] = useState(null);
+
   // Function to handle encryption
   const handleEncrypt = (t) => {
     const encrypted = CryptoJS.AES.encrypt(t, data.chatId).toString();
     // setEncryptedMessage(encrypted);
     return encrypted
   };
+  // Function to handle image preview
+  const handleImagePreview = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImg(file);
+      // Create an object URL for image preview
+      setImgPreview(URL.createObjectURL(file));
+    }
+  };
 
-  const { currentUser } = useContext(AuthContext);
-  const { data } = useContext(ChatContext);
+  // Function to remove image preview and reset image state
+  const removeImagePreview = () => {
+    setImg(null);
+    setImgPreview(null);
+  };
+
+  const addUserToFriends = async (userId) => {
+    try {
+      // Check if the user ID exists in the "userFriends" collection under the current user
+      const userFriendsDoc = await getDoc(doc(db, "userFriends", data.user.uid));
+      
+      if (!userFriendsDoc.exists()) {
+        // If the document doesn't exist, create it with the "friends" property as an empty array
+        await setDoc(doc(db, "userFriends", data.user.uid), { friends: [] });
+      }
+      
+      const friendsArray = userFriendsDoc.data()?.friends || []; // Get the "friends" property or an empty array if it's not defined
+      
+      if (!friendsArray.includes(userId)) {
+        // If the user ID is not present in the "friends" array, add it
+        await updateDoc(doc(db, "userFriends", data.user.uid), {
+          friends: arrayUnion(userId),
+        });
+      }
+    } catch (error) {
+      console.error("Error adding user to friends:", error);
+    }
+  };
+  
+  
   const handleSend = async () => {
     if (!(text || img)){
       return;
@@ -104,25 +136,37 @@ const Input = () => {
       },
       [data.chatId + ".date"]: serverTimestamp(),
     });
-
+    // Add the other user's UID to the "userFriends" collection under the current user
+    // await addUserToFriends(data.user.uid);
+    // Assuming `data.user.uid` contains the other user's ID
     setText("");
     setImg(null);
+    setImgPreview(null);
+    const otherUserId = currentUser.uid;
+
+    // Call addUserToFriends and pass the other user's ID
+    if (otherUserId) {
+      try {
+        await addUserToFriends(otherUserId);
+      } catch (error) {
+        console.error("Error adding user to friends:", error);
+      }
+    }
+
+
+    
+
+    // await updateDoc(doc(db, "userMessages", currentUser.uid), {
+    //   [data.user.uid]: arrayUnion({
+    //     uid: data.user.uid,
+    //     text: handleEncrypt(text),
+    //     date: serverTimestamp(),
+    //   }),
+    // });
+    
+
+    
   };
-
-
-  // // Function to encrypt the message using the recipient's public key
-  // const encryptMessage = (message) => {
-  //   if (!data.keyPairs[data.chatId]?.privateKey) {
-  //     // If the public key of the recipient is not available,
-  //     // return the message as is or handle it as needed.
-  //     return message;
-  //   }
-
-  //   const encryptor = new JSEncrypt();
-  //   encryptor.setPublicKey(data.keyPairs[data.chatId].privateKey);
-  //   return encryptor.encrypt(message);
-  // };
-
 
 
   const handleKey = e =>{
@@ -133,29 +177,39 @@ const Input = () => {
   }
   return (
     <div className="input">
+      {/* Show image preview */}
+      {imgPreview && (
+          <div className="img-preview">
+            <img style={{height:20}} src={imgPreview} alt="Preview" />
+            <button onClick={removeImagePreview}>Remove</button>
+          </div>
+        )}
+      <input
+          type="file"
+          style={{ display: "none" }}
+          id="file"
+          onChange={handleImagePreview}
+        />
+        {!imgPreview && <label htmlFor="file">
+          {/* <img src={Img} alt="" /> */}
+          <CameraAltIcon sx={{color: red[600]}} className="cameraicon"/>
+        </label>}
       <input
         type="text"
         placeholder="Message here..."
         // onChange={(e) => setText(e.target.value)}
-        onChange={handleText}
+        // onChange={handleText}
+        onChange={(e) => setText(e.target.value)}
         value={text}
         onKeyDown={handleKey}
         required
       />
-      <div className="send">
-        <img src={Attach} alt="" />
-        <input
-          type="file"
-          style={{ display: "none" }}
-          id="file"
-          onChange={(e) => setImg(e.target.files[0])}
-          
-        />
-        <label htmlFor="file">
-          <img src={Img} alt="" />
-        </label>
-        <button onClick={handleSend}>Send</button>
-      </div>
+      
+      {text && <div className="send">
+        {/* <img src={Attach} alt="" /> */}
+        {/* <SendIcon sx={{color:red[600]}}/> */}
+        <button onClick={handleSend}><SendIcon sx={{color:red[600]}}/></button>
+      </div>}
     </div>
   );
 };

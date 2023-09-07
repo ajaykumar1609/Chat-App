@@ -6,6 +6,7 @@ import "./style.scss"
 import "./App.css"
 import { useContext } from "react";
 import { AuthContext } from "./context/AuthContext";
+import Stories from "./components/Stories";
 function App() {
   const {currentUser} = useContext(AuthContext)
   // console.log(currentUser)
@@ -22,6 +23,7 @@ function App() {
           <Route index element ={<ProtectedRoute><Home/></ProtectedRoute> }/>
           <Route path="login" element ={<Login/>}/>
           <Route path="register" element ={<Register/>}/>
+          <Route path="stories" element={<Stories/>}/>
         </Route>
       </Routes>
     </BrowserRouter>

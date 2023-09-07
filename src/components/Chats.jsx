@@ -8,12 +8,13 @@ import CryptoJS from 'crypto-js';
 
 const Chats = () => {
   const [chats, setChats] = useState([]);
+  const [sUser,selectUser] = useState(null);
 
   const { currentUser } = useContext(AuthContext);
   const { dispatch } = useContext(ChatContext);
   // Function to handle decryption
   const handleDecrypt = (t,c1,c2) => {
-    console.log(t,getChatId(c1,c2));
+    // console.log(t,getChatId(c1,c2));
     const bytes = CryptoJS.AES.decrypt(t, getChatId(c1,c2));
     const decrypted = bytes.toString(CryptoJS.enc.Utf8);
     // setDecryptedMessage(decrypted);
@@ -37,7 +38,7 @@ const Chats = () => {
     const getChats = async () => {
       const unsub = onSnapshot(doc(db, "userChats", currentUser.uid), (doc) => {
         setChats(doc.data());
-        console.log(chats);
+        // console.log(chats);
       });
 
       return () => {
@@ -50,15 +51,16 @@ const Chats = () => {
 
 
   const handleSelect = (u) => {
-    console.log(u)
+    selectUser(u);
+    // console.log(u)
     dispatch({ type: "CHANGE_USER", payload: u });
   };
 
   return (
-    <div className="chats">
+    <div className="chats" >
       {Object.entries(chats)?.sort((a,b)=>b[1].date - a[1].date).map((chat) => (
         <div
-          className="userChat"
+          className={`userChat ${sUser?.uid === chat[1].userInfo?.uid ? 'selected' : ''}`}
           key={chat[0]}
           onClick={() => handleSelect(chat[1].userInfo)}
         >
@@ -68,7 +70,7 @@ const Chats = () => {
           {/* <img src={chat[1].userInfo.photoURL} alt="" /> */}
           <div className="userChatInfo">
             <span>{chat[1].userInfo?.displayName}</span>
-            {chat[1].lastMessage && <p>{handleDecrypt(chat[1].lastMessage.text,chat[1].userInfo.uid,currentUser.uid)}</p>}
+            {chat[1].lastMessage && <p>{handleDecrypt(chat[1].lastMessage.text,chat[1].userInfo?.uid,currentUser.uid)}</p>}
           </div>
         </div>
       ))}

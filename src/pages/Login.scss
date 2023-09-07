@@ -1,32 +1,96 @@
 * { font-family: 'Poppins' }
+@mixin mobile {
+    @media screen and (max-width: 480px) {
+      @content;
+    }
+  }
+  @mixin tablet {
+    @media screen and (max-width: 768px)  and (min-width:480px){
+      @content;
+    }
+  }
+  @mixin laptop {
+    @media screen and (max-width: 1200px) {
+      @content;
+    }
+  }
 .login{
     width: 100vw;
     height: 100vh;
-    background-color: #d4d9e7;
+    // background-color: #d4d9e7;
+    // background-color: rgb(2,34,114);
+    background-color: #9AC5F4;
     display: flex;
     align-items: center;
     justify-content: center;
+    @include mobile(){
+        height: 105vh;
+        padding-bottom: 20px;;
+        // flex-direction: column;
+        // display: block;
+        align-items: flex-start;
+    }
+    
 
     .loginWrapper{
         width: 80%;
         display: flex;
+        @include mobile(){
+            flex-direction: column;
+            // align-items: start;
+            // justify-content: start;
+            gap: 40px;
+            width: 90vw;
+            margin-top: 60px;
+        }
+        @include tablet(){
+            width: 100vw;
+        }
 
         .loginLeft{
+            max-width: 45vw;
             display: flex;
             flex-direction: column;
+            align-self: center;
             flex: 1;
             margin: 0 20px;
             justify-content: center;
+            img{
+                height: auto;
+                // max-width: 500px;
+            }
+
+            @include mobile(){
+                // flex-direction: column;
+                margin: 0;
+                max-width: 80%;
+
+            }
+            @include tablet(){
+                img{
+                    // max-width: 30vw;
+                    // margin-left: 70px;
+                }
+                margin: 0;
+            }
 
             .loginLogo{
                 font-size: 60px;
                 font-weight: 800;
                 color: #011631;
                 margin-bottom: 10px;
+                @include mobile(){
+                    margin: 0;
+                    font-size: 30px;
+                }
             }
 
             .loginDesc{
                 font-size: 28px;
+                @include mobile(){
+                    // flex-direction: column;
+                    font-size: 15px;
+                }
             }
         }
 
@@ -34,41 +98,96 @@
             display: flex;
             flex-direction: column;
             flex: 1;
-            margin: 0 20px;
+            align-self: center;
+            // margin: 0 20px;
+            // width: 20%;
+            width: 45vw;
             justify-content: center;
+
+            .loginBox{
+                display: flex;
+                justify-content: center;
+            }
+
+            @include mobile(){
+                // flex-direction: column;
+                margin: 0;
+                width: 90%;
+                // width: 100%;
+                // height: 100%;
+                
+            }
+            @include tablet(){
+                
+            }
+            .bottom{
+                display: flex;
+                // width: 100%;
+                // align-content: center;
+                justify-content: center;
+            
               
                     .bottomBox{
                         height: 350px;
-                        padding: 30px;
+                        // padding: 30px;
                         display: flex;
+                        width: 100%;
+                        // width: 70%;
                         flex-direction: column;
                         justify-content: space-between;
                         border-radius: 10px;
-                        background-color: white;
+                        // background-color: white;
+                        @include mobile(){
+                            // width:100%;
+                            // display: flex;
+                            align-self: center;
+                            margin: 0;
+                            // width: auto;
+                        }
+                        @include tablet(){
+                            width: 90%;
+                        }
 
                         .loginInput{
                             height: 50px;
-                            border-radius: 10px;
+                            // border-radius: 5px;
                             padding-left: 20px;
                             font-size: 18px;
-                            border: 1px solid gray;
+                            // background-color: #FFEEBB;
+                            background-color: transparent;
+                            // border: 1px solid gray;
+                            border: none;
+                            border-bottom: 2px solid #A7ECEE;
+                            color: #FFEEBB;
+                            &::placeholder{
+                                color: #FFEEBB;
+                            }
 
                             &:focus{
                                 outline: none;
                             }
+                            @include tablet(){
+                                height: 35px;
+                                border-radius: 5px;
+                            }
+
                         }
 
                         .loginButton{
                             height: 50px;
                             width: 100%;
-                            background-color: #011631;
-                            color: white;
+                            // background-color: #011631;
+                            background-color: #FFEEBB;
+                            color: darkcyan;
                             font-weight: 500;
                             font-size: 23px;
-                            border-radius: 10px;
+                            border-radius: 5px;
                             border: none;
                             margin-bottom: 5px;
                             cursor: pointer;
+                            @include tablet(){
+                                height: 35px;
+                            }
                         }
                         .loading_stuck{
                             font-size: 10px;
@@ -85,18 +204,44 @@
                         .loginRegisterButton{
                             height: 50px;
                             width: 100%;
-                            background-color: #42b72a;
-                            color: white;
+                            // background-color: #42b72a;
+                            background-color: #C4DFDF;
+                            color: darkcyan;
                             font-weight: 500;
-                            font-size: 23px;
-                            border-radius: 10px;
+                            font-size: 20px;
+                            border-radius: 5px;
                             border: none;
                             margin-bottom: 5px;
                             cursor: pointer;
                         }
+                        .googleSignIn{
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            // gap: 5px;
+                            padding: 2px 0px;
+                            border-radius: 5px;
+                            // background-color: #75a5c9;
+                            border: 2px solid #A7ECEE;
+                            img{
+                                height: 25px;
+                                // background-color: #fff;
+                                // border-radius: 50%;
+                                padding: 5px;
+                            }
+                            button{
+                                background-color: transparent;
+                                padding: 0;
+                                border: none;
+                                color:white ;
+                                font-size: 15px;
+                                font-weight:600;
+                            }
+                        }
+                        
 
                     }
-                
+            }
             
 
         }
@@ -107,21 +252,52 @@
 .register{
     width: 100vw;
     height: 100vh;
-    background-color: #d4d9e7;
+    // background-color: #d4d9e7;
+    background-color: #9AC5F4;
     display: flex;
     align-items: center;
     justify-content: center;
+    @include mobile(){
+        height: auto;
+        padding-bottom: 20px;
+        // flex-direction: column;
+        // display: block;
+        align-items: flex-start;
+    }
 
     .registerWrapper{
         width: 80%;
         display: flex;
+        @include mobile(){
+            flex-direction: column;
+            // align-items: start;
+            // justify-content: start;
+            gap: 40px;
+            width: 90vw;
+            margin-top: 60px;
+        }
 
         .registerLeft{
+            width: 45vw;
             display: flex;
             flex-direction: column;
+            align-self: center;
             flex: 1;
             margin: 0 20px;
             justify-content: center;
+            img{
+                height: auto;
+            }
+            @include mobile(){
+                // flex-direction: column;
+                margin: 0;
+
+            }
+            @include tablet(){
+                img{
+                    height: 200px;
+                }
+            }
 
             .registerLogo{
                 font-size: 60px;
@@ -139,27 +315,60 @@
             display: flex;
             flex-direction: column;
             flex: 1;
-            margin: 0 20px;
+            
+            align-self: center;
+            // margin: 0 20px;
+            // width: 20%;
+            width: 45vw;
             justify-content: center;
+
+            @include mobile(){
+                // flex-direction: column;
+                margin: 0;
+                width: 90%;
+                // width: 100%;
+                // height: 100%;
+                
+            }
+            @include tablet(){
+                
+            }
 
             .registerBox{
                 display: flex;
                 flex-direction: column;
-                background-color: white;
-                border-radius: 10px;
-                width: 100%;
+                justify-content: center;
+                gap:10px;
+                // background-color: white;
+                // border-radius: 10px;
+                // width: 100%;
+                // align-items: center;
+                // gap: 20px;
+                // justify-content: center;
 
                 .top{
                     display: flex;
+                    // justify-content: center;
                     align-items: center;
-                    justify-content: space-between;
-                    margin: 30px;
+                    justify-content: space-around;
+                    // width: 70%;
+                    // margin: 30px;
+                    // gap: 50px;
                     .profileImg{
                         display: flex;
                         width: 70px;
                         height: 70px;
                         border-radius: 50%;
                         object-fit: cover;
+                    }
+                    @include tablet(){
+                        .profileImg{
+                            width: 40px;
+                            height: 40px;
+                        }
+                        // .formInput{
+
+                        // }
                     }
 
                     .formInput{
@@ -171,7 +380,7 @@
                             align-items: center;
 
                             .icon{
-                                font-size: 34px;
+                                font-size: 20px;
                                 color: #333;
                                 margin-left: 10px;
                                 cursor: pointer;
@@ -181,48 +390,80 @@
                 }
 
                 .bottom{
+                    display: flex;
+                    justify-content: center;
                     .bottomBox{
-                        height: 450px;
-                        padding: 5px 40px 10px 40px;
+
+                        height: 350px;
+                        // padding: 30px;
                         display: flex;
+                        width: 70%;
                         flex-direction: column;
                         justify-content: space-between;
                         border-radius: 10px;
-                        background-color: white;
+                        // background-color: white;
+                        @include mobile(){
+                            width:100%;
+                            // display: flex;
+                            align-self: center;
+                            margin: 0;
+                            // width: auto;
+                        }
+                        @include tablet(){
+                            width: 100%;
+                        }
+
 
                         .registerInput{
                             height: 50px;
-                            border-radius: 10px;
+                            // border-radius: 5px;
                             padding-left: 20px;
                             font-size: 18px;
-                            border: 1px solid gray;
+                            // background-color: #FFEEBB;
+                            background-color: transparent;
+                            // border: 1px solid gray;
+                            border: none;
+                            border-bottom: 2px solid #A7ECEE;
+                            color: #FFEEBB;
+                            &::placeholder{
+                                color: #FFEEBB;
+                            }
 
                             &:focus{
                                 outline: none;
+                            }
+                            @include tablet(){
+                                height: 35px;
+                                border-radius: 5px;
                             }
                         }
 
                         .registerButton{
                             height: 50px;
                             width: 100%;
-                            background-color: #011631;
-                            color: white;
+                            // background-color: #011631;
+                            background-color: #FFEEBB;
+                            color: darkcyan;
                             font-weight: 500;
                             font-size: 23px;
-                            border-radius: 10px;
+                            border-radius: 5px;
                             border: none;
                             margin-bottom: 5px;
                             cursor: pointer;
+                            @include tablet(){
+                                height: 35px;
+                            }
                         }
 
                         .loginRegisterButton{
                             height: 50px;
                             width: 100%;
-                            background-color: #42b72a;
-                            color: white;
+                            // background-color: #42b72a;
+                            background-color: #C4DFDF;
+                            color: darkcyan;
                             font-weight: 500;
-                            font-size: 23px;
-                            border-radius: 10px;
+                            font-size: 20px;
+                            border-radius: 5px;
                             border: none;
                             margin-bottom: 5px;
                             cursor: pointer;

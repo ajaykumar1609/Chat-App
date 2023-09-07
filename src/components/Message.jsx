@@ -1,47 +1,57 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { ChatContext } from "../context/ChatContext";
-// import JSEncrypt from 'jsencrypt';
 import CryptoJS from 'crypto-js';
 import { db } from "../firebase";
-import { doc, updateDoc,serverTimestamp } from "firebase/firestore";
+import { doc, updateDoc,serverTimestamp,getDoc } from "firebase/firestore";
 
 const Message = ({ message,messages }) => {
   // console.log(message)
   const { currentUser } = useContext(AuthContext);
   const { data } = useContext(ChatContext);
+  const [senderName, setSenderName] = useState("");
    // Function to handle decryption
    const handleDecrypt = (t) => {
-    const bytes = CryptoJS.AES.decrypt(t, data.chatId);
-    const decrypted = bytes.toString(CryptoJS.enc.Utf8);
-    // setDecryptedMessage(decrypted);
-    return decrypted
+    try{
+      const bytes = CryptoJS.AES.decrypt(t, data.chatId);
+      const decrypted = bytes.toString(CryptoJS.enc.Utf8);
+      // setDecryptedMessage(decrypted);
+      return decrypted
+    }
+    catch(error){
+      console.log("Error encrypting message",error)
+
+    }
+    
   };
-
-  // // Function to decrypt the message text using the appropriate RSA private key
-  // const decryptMessage = (encryptedText) => {
-  //   // const chatId =
-  //   //   currentUser.uid > message.senderId
-  //   //     ? currentUser.uid + message.senderId
-  //   //     : message.senderId + currentUser.uid;
-
-  //   // Get the RSA private key from the ChatContext based on the chatId
-  //   const privateKey = data.keyPairs[data.chatId]?.privateKey;
-
-  //   if (!privateKey) {
-  //     // If the private key is not available (e.g., key pair not generated yet),
-  //     // return the encrypted text as is or handle it as needed.
-  //     return encryptedText;
-  //   }
-
-  //   // Create a new instance of JSEncrypt and set the private key
-  //   const decryptor = new JSEncrypt();
-  //   decryptor.setPrivateKey(privateKey);
-
-  //   // Use the decryptor to decrypt the message text
-  //   return decryptor.decrypt(encryptedText);
-  // };
-
+  // Function to handle encryption
+  const handleEncrypt = (t) => {
+    const encrypted = CryptoJS.AES.encrypt(t, data.chatId).toString();
+    // setEncryptedMessage(encrypted);
+    return encrypted
+  };
+  useEffect(() => {
+    const fetchSenderName = async () => {
+      try {
+        const userDocRef = doc(db, "users", message.senderId);
+        const userDocSnapshot = await getDoc(userDocRef);
+  
+        if (userDocSnapshot.exists()) {
+          const userData = userDocSnapshot.data();
+          setSenderName(userData.displayName);
+        } else {
+          // Handle case where the sender's document does not exist
+          setSenderName("Unknown User");
+        }
+      } catch (error) {
+        console.error("Error fetching sender's name:", error);
+        // Handle error condition, e.g., setSenderName("Error fetching name");
+      }
+    };
+  
+    fetchSenderName();
+  }, [message.senderId]);
+  
   // Add a state to track whether the delete button is visible
   const [deleteVisible, setDeleteVisible] = useState(false);
 
@@ -61,7 +71,7 @@ const Message = ({ message,messages }) => {
 
         const lastMessageUpdate = {
           [`${data.chatId}.lastMessage`]: {
-            text: "deleted", // Replace "deleted" with the variable or message content you want to show for the last message
+            text:handleEncrypt("deleted"), // Replace "deleted" with the variable or message content you want to show for the last message
             // You can add other properties like date if needed, similar to the previous example
           },
           [`${data.chatId}.date`]: serverTimestamp(),
@@ -98,6 +108,7 @@ const Message = ({ message,messages }) => {
   }, [message]);
 
     // Function to convert Firebase Timestamp to a human-readable date string
+// Function to convert Firebase Timestamp to a human-readable date and time string without seconds
   const formatDate = (timestamp) => {
     const dateObject = timestamp.toDate();
     const now = new Date();
@@ -108,13 +119,23 @@ const Message = ({ message,messages }) => {
     const messageDate = new Date(dateObject.getFullYear(), dateObject.getMonth(), dateObject.getDate());
 
     if (messageDate.getTime() === today.getTime()) {
-      return 'Today ' + dateObject.toLocaleTimeString(); // For Today's messages
+      return {
+        date: 'Today',
+        time: dateObject.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      };
     } else if (messageDate.getTime() === yesterday.getTime()) {
-      return 'Yesterday ' + dateObject.toLocaleTimeString(); // For Yesterday's messages
+      return {
+        date: 'Yesterday',
+        time: dateObject.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      };
     } else {
-      return dateObject.toLocaleString(); // For other messages, show the full date and time
+      return {
+        date: dateObject.toLocaleDateString(),
+        time: dateObject.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      };
     }
   };
+
 
   return (
     <div
@@ -128,21 +149,24 @@ const Message = ({ message,messages }) => {
           Delete
         </button>
       )}
-      <div className="messageInfo">
-        <img
+      {/* <div className="messageInfo"> */}
+        {/* <img
           src={
             message.senderId === currentUser.uid
               ? currentUser.photoURL
               : data.user.photoURL
           }
           alt=""
-        />
-        <small>{formatDate(message.date)}</small>
+        /> */}
+        {/* <small>{formatDate(message.date)}</small> */}
         {/* <small>{message.date.toDate()}</small> */}
-      </div>
+      {/* </div> */}
       <div className="messageContent">
-        <p>{handleDecrypt(message.text)}</p>
         {message.img && <img src={message.img} alt="" />}
+        {/* <small>{senderName}</small> */}
+        <p>{handleDecrypt(message.text)}</p>
+        <small>{formatDate(message.date).date} {formatDate(message.date).time}</small>
+        
       </div>
     </div>
   );

@@ -1,30 +1,21 @@
 import React, { useState, useRef } from "react";
-// import add_image from "../img/add-image.png"
-// import dp from "../img/defaultpic.webp"
 import {ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 // import { DriveFolderUploadOutlined } from "@mui/icons-material";
-import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { createUserWithEmailAndPassword, updateProfile, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import {auth,db,storage} from "../firebase"
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc,getDoc } from "firebase/firestore";
 import { useNavigate, Link } from "react-router-dom";
+import logo from "../img/chatapplogo-transformed.png"
+import googleicon from "../img/googleicon.png"
+import defaultImg from "../img/defaultpic.webp"
+// import "./Login.scss";
 // import {DriveFolderUploadOutlined} from '@mui/icons-material';
-import JSEncrypt from 'jsencrypt';
 const Register = () => {
   const [err, setErr] = useState(false);
   const [loading, setLoading] = useState(false);
   // const [t_file, setFile] = useState(null);
   const [img, setImg] = useState(null);
   const navigate = useNavigate();
-
-  // Generate a new RSA key pair (public and private keys)
-  const encryptor = new JSEncrypt();
-  encryptor.getKey();
-
-  // Get the public key to share with others (e.g., for encryption)
-  const publicKey = encryptor.getPublicKey();
-
-  // Get the private key to keep securely (e.g., for decryption)
-  const privateKey = encryptor.getPrivateKey();
 
 
   // const defaultAvatar = {dp};
@@ -47,10 +38,9 @@ const Register = () => {
   //     fileInputRef.current.value = "";
   //   }
   // };
+  
   const handleSubmit = async (e) =>{
     e.preventDefault()
-    // console.log(e)
-    // console.log(e.target[0].value)
     setLoading(true);
     setErr(false);
     const displayName = e.target[0].value;
@@ -91,6 +81,10 @@ const Register = () => {
 
             // create empty user chats on firestore
             await setDoc(doc(db, "userChats", res.user.uid), {});
+            // await setDoc(doc(db, "userMessages", res.user.uid), {});
+            // Create empty user stories on Firestore
+            await setDoc(doc(db, "userStories", res.user.uid), {});
+            await setDoc(doc(db, "userFriends", res.user.uid), {});
             navigate("/");
 
           } catch (err) {
@@ -105,58 +99,54 @@ const Register = () => {
       setLoading(false);
     }
   };
+
+  const handleGoogleSignIn = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      const res = await signInWithPopup(auth, provider);
+      const user = res.user;
+      const displayName = user.displayName;
+      const email = user.email;
+      const photoURL = user.photoURL;
+  
+      // Check if the user already exists in the "users" collection
+      const userDocRef = doc(db, "users", user.uid);
+      const userDocSnapshot = await getDoc(userDocRef);
+  
+      if (!userDocSnapshot.exists()) {
+        // If the user does not exist, create a new user document
+        await setDoc(userDocRef, {
+          uid: user.uid,
+          displayName,
+          email,
+          photoURL,
+        });
+  
+        // create empty user chats on firestore
+        await setDoc(doc(db, "userChats", user.uid), {});
+        // await setDoc(doc(db, "userMessages", user.uid), {});
+        // Create empty user stories on Firestore
+        await setDoc(doc(db, "userStories", user.uid), {});
+        await setDoc(doc(db, "userFriends", user.uid), {});
+      }
+  
+      // Redirect the user to the desired page after successful sign-in
+      navigate("/");
+    } catch (error) {
+      console.error("Error signing in with Google:", error);
+      // Handle any error or show error messages
+    }
+  };
+  
   return (
-    // <div className="formContainer">
-    //     <div className="formWrapper">
-    //     <span className='logo'>Chat App</span>
-    //     <span className='title'>Register</span>
-    //     <form onSubmit={handleSubmit}>
-    //         <input type='text' placeholder='display name'/>
-    //         <input type='email' placeholder='email'/>
-    //         <input type='password' placeholder='password'/>
-    //         {/* <input style={{display:"none"}} type='file' id="file" onChange={handleFileChange}/> */}
-    //         <input
-    //         ref={fileInputRef}
-    //         style={{ display: "none" }}
-    //         type="file"
-    //         id="file"
-    //         onChange={handleFileChange}
-    //         key={t_file ? t_file.name : ""} // Add a unique key based on the file name
-    //       />
-    //         {/* <label htmlFor='file'>
-    //             <img src={add_image} alt=''/>
-    //             <span>Add an avatar</span>
-    //         </label> */}
-    //       {t_file ? ( // Render the selected image if there's a file
-    //         <div className="uploaded_img">
-    //           <img src={URL.createObjectURL(t_file)} alt="Selected Avatar" />
-    //           <button className="button_uploadimg" onClick={handleRemove}>Remove/Change</button>
-    //         </div>
-    //       ) : (
-    //         <label htmlFor="file">
-    //           <>
-    //             <img src={add_image} alt="add" />
-    //             <span>Add an avatar</span>
-    //           </>
-    //         </label>
-    //       )}
-    //         {!loading && <button>Sign in</button>}
-    //         {loading && <button>Logging in</button>}
-    //         {loading && <span>Uploading and compressing the image please wait...</span>}
-    //         {err && <span>Something went wrong</span>}
-    //     </form>
-    //     <p>
-    //       You already have an account? <Link to="/login">Login</Link>
-    //     </p>
-    //     </div>
-    // </div>
     <div className="register">
       <div className="registerWrapper">
         <div className="registerLeft">
-          <h3 className="registerLogo">FaceBook</h3>
+          {/* <h3 className="registerLogo">FaceBook</h3>
           <span className="registerDesc">
             Connect with friends and the world around you on Facebook.
-          </span>
+          </span> */}
+          <img src={logo}/>
         </div>
         <div className="registerRight">
           <div className="registerBox">
@@ -165,7 +155,7 @@ const Register = () => {
                 src={
                   img
                     ? URL.createObjectURL(img)
-                    : "/assets/profileCover/DefaultProfile.jpg"
+                    : defaultImg
                 }
                 alt=""
                 className="profileImg"
@@ -175,13 +165,14 @@ const Register = () => {
                 {/* <UploadFileOutlinedIcon/> */}
                   {/* Image: <DriveFolderUploadOutlined className="icon"/> */}
                   {/* Image: <UploadFileOutlinedIcon className="icon" /> */}
+                  Image: <img src={googleicon}/>
                   <input
                     type="file"
                     name="file"
                     id="file"
                     accept=".png,.jpeg,.jpg"
-                    // className="icon"
-                    // style={{ display: "none" }}
+                    className="icon"
+                    style={{ display: "none" }}
                     onChange={(e) => setImg(e.target.files[0])}
                   />
                 </label>
@@ -194,14 +185,14 @@ const Register = () => {
                   placeholder="Name"
                   id="displayName"
                   className="registerInput"
-                  required
+                  // required
                 />
                 <input
                   type="email"
                   placeholder="Email"
                   id="email"
                   className="registerInput"
-                  required
+                  // required
                 />
                 <input
                   type="password"
@@ -209,7 +200,7 @@ const Register = () => {
                   id="password"
                   className="registerInput"
                   minLength={6}
-                  required
+                  // required
                 />
                 {/* <input
                   type="password"
@@ -221,6 +212,7 @@ const Register = () => {
                 <button type="submit" className="registerButton">
                   Sign Up
                 </button>
+                {/* <button onClick={handleGoogleSignIn}>google sign in</button> */}
                 <Link to="/login">
                   <button className="loginRegisterButton">
                     Log into Account
